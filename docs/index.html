@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>J.A.R.V.I.S.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#02070d;--panel:#07141f;--line:#0e6f8a;--cy:#00f0ff;--tx:#d6f6fb;--mut:#6fa3b0;--err:#ff6b6b}
+*{box-sizing:border-box}
+body{margin:0;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 30%,#06222e,var(--bg) 65%);color:var(--tx);font:600 16px/1.5 "Rajdhani","Segoe UI",system-ui,sans-serif}
+header{display:flex;justify-content:center;padding:6px}
+#status{color:var(--cy);font:400 12px Orbitron,Rajdhani,sans-serif;letter-spacing:.35em}
+h1{margin:0;font:400 20px/1 Orbitron,Rajdhani,sans-serif;letter-spacing:.4em;color:var(--cy)}
+.big{font-size:clamp(26px,8vw,42px);letter-spacing:.35em;text-shadow:0 0 18px #00f0ff}
+.sub{color:var(--mut);letter-spacing:.3em;font-size:12px}
+#hud{width:min(98vw,46dvh,540px);aspect-ratio:1;margin:0 auto;flex:none;filter:drop-shadow(0 0 10px #00f0ff88)}
+.rot{transform-origin:300px 300px;animation:r 40s linear infinite}
+.rev{animation-direction:reverse;animation-duration:25s}
+.thinking .rot{animation-duration:4s}
+.error{filter:hue-rotate(150deg) drop-shadow(0 0 10px #ff6b6b88)}
+@keyframes r{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.rot{animation:none}}
+#log{flex:1;overflow:auto;padding:6px 16px;display:flex;flex-direction:column;gap:8px;min-height:60px}
+.m{max-width:88%;padding:8px 12px;white-space:pre-wrap;background:rgba(4,22,32,.75);border-left:2px solid var(--cy)}
+.m.u{align-self:flex-end;border-left:0;border-right:2px solid var(--cy)}
+.m.e{border-left-color:var(--err);color:var(--err)}
+.m button{display:block;background:none;border:0;color:var(--mut);padding:0;font-size:12px;cursor:pointer}
+form{display:flex;gap:8px;padding:8px 16px}
+textarea,input{flex:1;background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:2px;padding:10px;font:inherit}
+textarea{resize:none}
+.b{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:2px;padding:0 12px;min-height:44px;cursor:pointer;font:inherit;text-transform:uppercase;letter-spacing:.12em;font-size:13px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+.b:hover:not(:disabled){border-color:var(--cy)}
+.b:disabled{opacity:.4}
+:focus-visible{outline:2px solid var(--cy)}
+.opts{display:flex;gap:14px;align-items:center;padding:0 16px 10px;font-size:13px;color:var(--mut)}
+#login{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;z-index:9}
+#login form{width:min(340px,100%);flex-direction:column;padding:0}
+#lerr{color:var(--err);min-height:1.4em;font-size:14px}
+#app{display:none;flex:1;flex-direction:column;min-height:0}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <h1 class="big">J.A.R.V.I.S.</h1>
+  <div class="sub">AUTHENTICATION REQUIRED</div>
+  <form id="lf">
+    <input id="key" type="password" autocomplete="current-password" aria-label="Access key" placeholder="Access key" required>
+    <button class="b" id="lb">Unlock</button>
+  </form>
+  <div id="lerr" role="alert"></div>
+</div>
+
+<header><span id="status" role="status">LOCKED</span></header>
+
+<div id="app">
+  <svg id="hud" viewBox="0 0 600 600" aria-hidden="true"></svg>
+  <div id="log" aria-live="polite"></div>
+  <form id="f">
+    <textarea id="t" rows="1" aria-label="Message" placeholder="Ask JARVIS anything"></textarea>
+    <button class="b" id="mic" type="button">Mic</button>
+    <button class="b" id="stop" type="button" disabled>Stop</button>
+    <button class="b" id="send">Send</button>
+  </form>
+  <div class="opts">
+    <label><input type="checkbox" id="auto" checked style="flex:none"> Speak replies</label>
+    <button class="b" id="clr" type="button" style="min-height:30px">Clear</button>
+    <button class="b" id="out" type="button" style="min-height:30px">Lock</button>
+  </div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbz0Xkpy1cbJgZC-AdG5sqKGl6OL87wKozixuNWZS1YoXDG_jqC8jqdudxufEkDYhjof/exec';
+
+const $=id=>document.getElementById(id),log=$('log'),t=$('t'),hud=$('hud');
+let cid=crypto.randomUUID(),busy=false,audio,url,rec,tok=0,state='',tk=sessionStorage.getItem('jt'),an,data,actx;
+const set=(s,l)=>{state=s;hud.setAttribute('class',s);$('status').textContent=l};
+
+/* ---------- HUD ---------- */
+const NS='http://www.w3.org/2000/svg',C=300,TAU=6.2832;
+const el=(p,n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.append(e);return e};
+const g=(p,c)=>el(p,'g',{class:c||''});
+const ring=(p,r,w,o,d)=>el(p,'circle',{cx:C,cy:C,r,fill:'none',stroke:'#00f0ff','stroke-width':w,opacity:o,'stroke-dasharray':d||''});
+function ticks(p,r1,r2,n,w,o,a0=0,a1=TAU){for(let i=0;i<n;i++){const a=a0+(a1-a0)*i/(n-1||1);el(p,'line',{x1:C+Math.cos(a)*r1,y1:C+Math.sin(a)*r1,x2:C+Math.cos(a)*r2,y2:C+Math.sin(a)*r2,stroke:'#00f0ff','stroke-width':w,opacity:o})}}
+const bg=g(hud);ring(bg,292,1,.07);ring(bg,274,1,.1);
+const hx=(x,y,o)=>el(bg,'polygon',{points:[0,1,2,3,4,5].map(i=>(x+34*Math.cos(i*1.0472+.5236)).toFixed(1)+','+(y+34*Math.sin(i*1.0472+.5236)).toFixed(1)).join(' '),fill:'#00f0ff','fill-opacity':o/4,stroke:'#00f0ff','stroke-opacity':o});
+[[60,86],[119,86],[89.5,137],[148.5,137]].forEach(([x,y])=>hx(x,y,.22));
+[[540,514],[481,514],[510.5,463],[451.5,463]].forEach(([x,y])=>hx(x,y,.22));
+const br='M120 150H62Q20 150 20 192V408Q20 450 62 450H120';
+el(bg,'path',{d:br,fill:'none',stroke:'#00f0ff','stroke-width':1.2,opacity:.8});
+el(bg,'path',{d:br,fill:'none',stroke:'#00f0ff','stroke-width':1.2,opacity:.8,transform:'translate(600 0) scale(-1 1)'});
+ticks(bg,252,266,44,1.4,.8,2.6,3.68);ticks(bg,252,266,44,1.4,.8,-.54,.54);
+el(bg,'path',{d:'M372 82H430L478 122H588',fill:'none',stroke:'#00f0ff','stroke-width':1.5,opacity:.9});
+el(bg,'path',{d:'M12 560L70 520H170',fill:'none',stroke:'#00f0ff','stroke-width':1.5,opacity:.9});
+const ttl=el(bg,'text',{x:26,y:52,fill:'#00f0ff','font-size':26,'letter-spacing':7,'font-family':'Orbitron,Rajdhani,sans-serif'});ttl.textContent='J.A.R.V.I.S.';
+const clock=el(bg,'text',{x:380,y:70,fill:'#00f0ff','font-size':24,'font-family':'Orbitron,Rajdhani,sans-serif'});
+const chev=[0,1,2].map(k=>{const y=556+k*13;return el(bg,'path',{d:`M284 ${y+9}L300 ${y}L316 ${y+9}`,fill:'none',stroke:'#00f0ff','stroke-width':4,opacity:.3})});
+ring(hud,238,3,1);ring(hud,246,.6,.4);
+const bars=[];for(let i=0;i<48;i++){const a=i/48*TAU,k=.3+.7*Math.pow(.5+.5*Math.cos(a+1.5708),1.5);bars.push({c:Math.cos(a),s:Math.sin(a),e:el(hud,'line',{stroke:'#00f0ff','stroke-width':8,opacity:k})})}
+const core=g(hud);ring(core,166,3,1);ring(core,160,1,.5);
+ticks(g(core,'rot'),138,152,220,1,.75);ticks(g(core,'rot rev'),118,128,140,1.4,.6);
+ring(core,110,1.5,.9);ring(g(core,'rot'),92,12,.3,'16 7');ring(core,78,2,.8);
+ring(g(core,'rot rev'),62,5,.8,'3 5');ring(g(core,'rot'),46,3,.9,'30 12');
+el(core,'circle',{cx:C,cy:C,r:30,fill:'#00f0ff',opacity:.18});ring(core,30,2,1);el(core,'circle',{cx:C,cy:C,r:10,fill:'#00f0ff'});
+let lastT='';
+function frame(now){let lvl=0;
+ if(state==='speaking'&&an){an.getByteFrequencyData(data);let s=0;for(const v of data)s+=v;lvl=s/data.length/255}
+ bars.forEach((b,i)=>{let v;
+  if(state==='speaking'&&an)v=data[(i%24)+2]/255;
+  else if(state==='thinking')v=.2+.4*(.5+.5*Math.sin(now/180+i*.6));
+  else if(state==='listening')v=.15+.3*(.5+.5*Math.sin(now/140));
+  else v=.08+.05*Math.sin(now/900+i);
+  const r1=172,r2=r1+8+v*40;b.e.setAttribute('x1',C+b.c*r1);b.e.setAttribute('y1',C+b.s*r1);b.e.setAttribute('x2',C+b.c*r2);b.e.setAttribute('y2',C+b.s*r2)});
+ const act=state==='thinking'||state==='speaking';
+ chev.forEach((c,k)=>c.setAttribute('opacity',act&&Math.floor(now/220)%3===2-k?1:.3));
+ const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(tm!==lastT){clock.textContent=tm;lastT=tm}
+ core.style.transformOrigin='300px 300px';core.style.transform='scale('+(1+lvl*.12)+')';
+ requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+
+/* ---------- App ---------- */
+const add=(txt,c)=>{const d=document.createElement('div');d.className='m '+c;d.textContent=txt;
+ if(c==='a'){const b=document.createElement('button');b.textContent='Copy';b.onclick=()=>navigator.clipboard.writeText(txt);d.append(b)}
+ log.append(d);log.scrollTop=log.scrollHeight};
+
+async function api(action,body,anon){
+ const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,token:anon?undefined:tk,...body})});
+ let j;try{j=await r.json()}catch{throw new Error('Backend unreachable. Check the Apps Script URL and deployment access.')}
+ if(j.status===401&&!anon){lock();throw new Error('Session expired. Log in again.')}
+ if(!j.ok)throw new Error(j.error||'Request failed');return j}
+
+function lock(){tk=null;sessionStorage.removeItem('jt');stopAudio();$('app').style.display='none';$('login').style.display='flex';set('','LOCKED')}
+function stopAudio(){tok++;if(audio){audio.pause();audio=null}if(url){URL.revokeObjectURL(url);url=null}$('stop').disabled=true}
+
+async function speak(text,quiet){
+ stopAudio();const my=tok;set('thinking','GENERATING VOICE');
+ try{
+  const j=await api('tts',{text});if(my!==tok)return;
+  url=URL.createObjectURL(new Blob([Uint8Array.from(atob(j.audio),c=>c.charCodeAt(0))],{type:'audio/mpeg'}));
+  if(my!==tok){stopAudio();return}
+  audio=new Audio(url);
+  actx=actx||new AudioContext();await actx.resume();
+  const src=actx.createMediaElementSource(audio);an=actx.createAnalyser();an.fftSize=128;data=new Uint8Array(an.frequencyBinCount);
+  src.connect(an);an.connect(actx.destination);
+  audio.onended=()=>{stopAudio();an=null;set('','READY')};
+  $('stop').disabled=false;set('speaking','SPEAKING');await audio.play();
+ }catch(e){if(my===tok){stopAudio();an=null;if(!quiet)add('Voice unavailable: '+e.message,'e');set('','READY')}}}
+
+$('f').onsubmit=async e=>{
+ e.preventDefault();const m=t.value.trim();if(!m||busy)return;
+ busy=true;$('send').disabled=true;stopAudio();add(m,'u');set('thinking','PROCESSING');
+ try{const j=await api('chat',{message:m,conversationId:cid});t.value='';add(j.reply,'a');set('','READY');if($('auto').checked)speak(j.reply)}
+ catch(x){add(x.message,'e');set('error','CONNECTION ERROR')}
+ finally{busy=false;$('send').disabled=false}};
+
+t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('f').requestSubmit()}};
+$('stop').onclick=()=>{stopAudio();an=null;set('','READY')};
+$('out').onclick=lock;
+$('clr').onclick=async()=>{if(!confirm('Clear this conversation?'))return;stopAudio();try{await api('clear',{conversationId:cid})}catch{}cid=crypto.randomUUID();log.innerHTML=''};
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('mic').onclick=()=>{
+ if(!SR){add('Speech recognition is not supported in this browser.','e');return}
+ if(rec){rec.stop();return}
+ stopAudio();rec=new SR();rec.lang=navigator.language;
+ rec.onstart=()=>set('listening','LISTENING');
+ rec.onresult=e=>{t.value=e.results[0][0].transcript;t.focus()};
+ rec.onerror=e=>add(e.error==='not-allowed'?'Microphone permission denied.':'Mic error: '+e.error,'e');
+ rec.onend=()=>{rec=null;set('','READY')};
+ rec.start()};
+
+function enter(name,speakIt){
+ $('login').style.display='none';$('app').style.display='flex';set('','READY');
+ const w=`Welcome, ${name}. What are we doing today?`;
+ if(!log.children.length)add(w,'a');
+ if(speakIt)speak(w,true)}
+
+$('lf').onsubmit=async e=>{
+ e.preventDefault();$('lerr').textContent='';$('lb').disabled=true;
+ try{const j=await api('login',{key:$('key').value},true);tk=j.token;sessionStorage.setItem('jt',tk);sessionStorage.setItem('jn',j.name);$('key').value='';enter(j.name,true)}
+ catch(x){$('lerr').textContent=x.message}
+ finally{$('lb').disabled=false}};
+
+if(tk)enter(sessionStorage.getItem('jn')||'Iron Man',false);
+</script>
+</body>
+  </html>
