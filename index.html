@@ -1,84 +1,52 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>J.A.R.V.I.S.</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet"><title>J.A.R.V.I.S.</title>
 <style>
 :root{--bg:#02070d;--panel:#07141f;--line:#0e6f8a;--cy:#00f0ff;--tx:#d6f6fb;--mut:#6fa3b0;--err:#ff6b6b}
-*{box-sizing:border-box}
-body{margin:0;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 30%,#06222e,var(--bg) 65%);color:var(--tx);font:600 16px/1.5 "Rajdhani","Segoe UI",system-ui,sans-serif}
-header{display:flex;justify-content:center;padding:6px}
-#status{color:var(--cy);font:400 12px Orbitron,Rajdhani,sans-serif;letter-spacing:.35em}
-h1{margin:0;font:400 20px/1 Orbitron,Rajdhani,sans-serif;letter-spacing:.4em;color:var(--cy)}
-.big{font-size:clamp(26px,8vw,42px);letter-spacing:.35em;text-shadow:0 0 18px #00f0ff}
-.sub{color:var(--mut);letter-spacing:.3em;font-size:12px}
-#hud{width:min(98vw,46dvh,540px);aspect-ratio:1;margin:0 auto;flex:none;filter:drop-shadow(0 0 10px #00f0ff88)}
-.rot{transform-origin:300px 300px;animation:r 40s linear infinite}
-.rev{animation-direction:reverse;animation-duration:25s}
-.thinking .rot{animation-duration:4s}
-.error{filter:hue-rotate(150deg) drop-shadow(0 0 10px #ff6b6b88)}
+*{box-sizing:border-box}body{margin:0;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 30%,#06222e,var(--bg) 65%);color:var(--tx);font:16px/1.5 "Rajdhani","Segoe UI",system-ui,sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px}
+h1{margin:0;font:300 20px/1 "Rajdhani",system-ui,sans-serif;letter-spacing:.4em;color:var(--cy)}#status{color:var(--cy);font-size:14px;letter-spacing:.15em}
+#hud{width:min(62vw,44dvh,380px);aspect-ratio:1;margin:0 auto;flex:none;filter:drop-shadow(0 0 10px #00f0ff88)}
+.rot{transform-origin:300px 300px;animation:r 40s linear infinite}.rev{animation-direction:reverse;animation-duration:25s}
+.thinking .rot{animation-duration:4s}.error{filter:hue-rotate(150deg) drop-shadow(0 0 10px #ff6b6b88)}
 @keyframes r{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.rot{animation:none}}
 #log{flex:1;overflow:auto;padding:6px 16px;display:flex;flex-direction:column;gap:8px;min-height:60px}
-.m{max-width:88%;padding:8px 12px;white-space:pre-wrap;background:rgba(4,22,32,.75);border-left:2px solid var(--cy)}
-.m.u{align-self:flex-end;border-left:0;border-right:2px solid var(--cy)}
-.m.e{border-left-color:var(--err);color:var(--err)}
+.m{max-width:88%;padding:8px 12px;border-radius:10px;white-space:pre-wrap;background:var(--panel);border:1px solid #0b3646}.m.u{align-self:flex-end;border-color:var(--line)}.m.e{border-color:var(--err);color:var(--err)}
 .m button{display:block;background:none;border:0;color:var(--mut);padding:0;font-size:12px;cursor:pointer}
-form{display:flex;gap:8px;padding:8px 16px}
-textarea,input{flex:1;background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:2px;padding:10px;font:inherit}
-textarea{resize:none}
-.b{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:2px;padding:0 12px;min-height:44px;cursor:pointer;font:inherit;text-transform:uppercase;letter-spacing:.12em;font-size:13px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
-.b:hover:not(:disabled){border-color:var(--cy)}
-.b:disabled{opacity:.4}
+form{display:flex;gap:8px;padding:8px 16px}textarea,input{flex:1;background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}textarea{resize:none}
+.b{background:var(--panel);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:0 12px;min-height:44px;cursor:pointer;font:inherit}.b:hover:not(:disabled){border-color:var(--cy)}.b:disabled{opacity:.4}
 :focus-visible{outline:2px solid var(--cy)}
 .opts{display:flex;gap:14px;align-items:center;padding:0 16px 10px;font-size:13px;color:var(--mut)}
 #login{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;z-index:9}
-#login form{width:min(340px,100%);flex-direction:column;padding:0}
-#lerr{color:var(--err);min-height:1.4em;font-size:14px}
+#login form{width:min(340px,100%);flex-direction:column;padding:0}#lerr{color:var(--err);min-height:1.4em;font-size:14px}
 #app{display:none;flex:1;flex-direction:column;min-height:0}
-</style>
-</head>
-<body>
 
-<div id="login">
-  <h1 class="big">J.A.R.V.I.S.</h1>
-  <div class="sub">AUTHENTICATION REQUIRED</div>
-  <form id="lf">
-    <input id="key" type="password" autocomplete="current-password" aria-label="Access key" placeholder="Access key" required>
-    <button class="b" id="lb">Unlock</button>
-  </form>
-  <div id="lerr" role="alert"></div>
-</div>
-
-<header><span id="status" role="status">LOCKED</span></header>
-
+body{font-family:"Rajdhani","Segoe UI",system-ui,sans-serif;font-weight:600}
+h1,#status{font-family:Orbitron,Rajdhani,sans-serif}
+header{justify-content:center;padding:6px}header h1{display:none}#status{font-size:12px;letter-spacing:.35em}
+#hud{width:min(98vw,46dvh,540px)}
+.big{font-size:clamp(26px,8vw,42px)!important;letter-spacing:.35em;text-shadow:0 0 18px #00f0ff}.sub{color:var(--mut);letter-spacing:.3em;font-size:12px}
+.m,textarea,input,.b{border-radius:2px!important}
+.m{background:rgba(4,22,32,.75);border:0;border-left:2px solid var(--cy)}.m.u{border-left:0;border-right:2px solid var(--cy)}.m.e{border-left-color:var(--err)}
+.b{text-transform:uppercase;letter-spacing:.12em;font-size:13px;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+</style></head><body>
+<div id="login"><h1 class="big">J.A.R.V.I.S.</h1><div class="sub">AUTHENTICATION REQUIRED</div>
+<form id="lf"><input id="key" type="password" autocomplete="current-password" aria-label="Access key" placeholder="Access key" required><button class="b" id="lb">Unlock</button></form><div id="lerr" role="alert"></div></div>
+<header><h1>J.A.R.V.I.S.</h1><span id="status" role="status">LOCKED</span></header>
 <div id="app">
-  <svg id="hud" viewBox="0 0 600 600" aria-hidden="true"></svg>
-  <div id="log" aria-live="polite"></div>
-  <form id="f">
-    <textarea id="t" rows="1" aria-label="Message" placeholder="Ask JARVIS anything"></textarea>
-    <button class="b" id="mic" type="button">Mic</button>
-    <button class="b" id="stop" type="button" disabled>Stop</button>
-    <button class="b" id="send">Send</button>
-  </form>
-  <div class="opts">
-    <label><input type="checkbox" id="auto" checked style="flex:none"> Speak replies</label>
-    <button class="b" id="clr" type="button" style="min-height:30px">Clear</button>
-    <button class="b" id="out" type="button" style="min-height:30px">Lock</button>
-  </div>
+<svg id="hud" viewBox="0 0 600 600" aria-hidden="true"></svg>
+<div id="log" aria-live="polite"></div>
+<form id="f"><textarea id="t" rows="1" aria-label="Message" placeholder="Ask JARVIS anything"></textarea>
+<button class="b" id="mic" type="button">Mic</button><button class="b" id="stop" type="button" disabled>Stop</button><button class="b" id="send">Send</button></form>
+<div class="opts"><label><input type="checkbox" id="auto" checked style="flex:none"> Speak replies</label><button class="b" id="clr" type="button" style="min-height:30px">Clear</button><button class="b" id="out" type="button" style="min-height:30px">Lock</button></div>
 </div>
-
 <script>
-const API='https://script.google.com/macros/s/AKfycbz0Xkpy1cbJgZC-AdG5sqKGl6OL87wKozixuNWZS1YoXDG_jqC8jqdudxufEkDYhjof/exec';
-
 const $=id=>document.getElementById(id),log=$('log'),t=$('t'),hud=$('hud');
-let cid=crypto.randomUUID(),busy=false,audio,url,rec,tok=0,state='',tk=sessionStorage.getItem('jt'),an,data,actx;
+const USE_FISH=false; // set to true to use Fish Audio again
+if('speechSynthesis' in window)speechSynthesis.getVoices();
+let pulse=0,fb=false,noted=false,cid=crypto.randomUUID(),busy=false,audio,url,rec,tok=0,state='',tk=sessionStorage.getItem('jt'),an,data,actx;
 const set=(s,l)=>{state=s;hud.setAttribute('class',s);$('status').textContent=l};
-
-/* ---------- HUD ---------- */
+/* HUD */
 const NS='http://www.w3.org/2000/svg',C=300,TAU=6.2832;
 const el=(p,n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p.append(e);return e};
 const g=(p,c)=>el(p,'g',{class:c||''});
@@ -105,85 +73,63 @@ ring(core,110,1.5,.9);ring(g(core,'rot'),92,12,.3,'16 7');ring(core,78,2,.8);
 ring(g(core,'rot rev'),62,5,.8,'3 5');ring(g(core,'rot'),46,3,.9,'30 12');
 el(core,'circle',{cx:C,cy:C,r:30,fill:'#00f0ff',opacity:.18});ring(core,30,2,1);el(core,'circle',{cx:C,cy:C,r:10,fill:'#00f0ff'});
 let lastT='';
-function frame(now){let lvl=0;
+function frame(now){let lvl=0;pulse*=.93;
  if(state==='speaking'&&an){an.getByteFrequencyData(data);let s=0;for(const v of data)s+=v;lvl=s/data.length/255}
+ else if(state==='speaking'&&fb)lvl=pulse*.4;
  bars.forEach((b,i)=>{let v;
   if(state==='speaking'&&an)v=data[(i%24)+2]/255;
+  else if(state==='speaking'&&fb)v=.2+pulse*.7*(.5+.5*Math.sin(i*1.7+now/90));
   else if(state==='thinking')v=.2+.4*(.5+.5*Math.sin(now/180+i*.6));
   else if(state==='listening')v=.15+.3*(.5+.5*Math.sin(now/140));
   else v=.08+.05*Math.sin(now/900+i);
   const r1=172,r2=r1+8+v*40;b.e.setAttribute('x1',C+b.c*r1);b.e.setAttribute('y1',C+b.s*r1);b.e.setAttribute('x2',C+b.c*r2);b.e.setAttribute('y2',C+b.s*r2)});
- const act=state==='thinking'||state==='speaking';
- chev.forEach((c,k)=>c.setAttribute('opacity',act&&Math.floor(now/220)%3===2-k?1:.3));
+ const act=state==='thinking'||state==='speaking';chev.forEach((c,k)=>c.setAttribute('opacity',act&&Math.floor(now/220)%3===2-k?1:.3));
  const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});if(tm!==lastT){clock.textContent=tm;lastT=tm}
- core.style.transformOrigin='300px 300px';core.style.transform='scale('+(1+lvl*.12)+')';
- requestAnimationFrame(frame)}
+ core.style.transformOrigin='300px 300px';core.style.transform='scale('+(1+lvl*.12)+')';requestAnimationFrame(frame)}
 requestAnimationFrame(frame);
-
-/* ---------- App ---------- */
+/* app */
 const add=(txt,c)=>{const d=document.createElement('div');d.className='m '+c;d.textContent=txt;
  if(c==='a'){const b=document.createElement('button');b.textContent='Copy';b.onclick=()=>navigator.clipboard.writeText(txt);d.append(b)}
  log.append(d);log.scrollTop=log.scrollHeight};
-
-async function api(action,body,anon){
- const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,token:anon?undefined:tk,...body})});
+const API='https://script.google.com/macros/s/AKfycbz0Xkpy1cbJgZC-AdG5sqKGl6OL87wKozixuNWZS1YoXDG_jqC8jqdudxufEkDYhjof/exec';
+async function api(action,body,anon){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,token:anon?undefined:tk,...body})});
  let j;try{j=await r.json()}catch{throw new Error('Backend unreachable. Check the Apps Script URL and deployment access.')}
- if(j.status===401&&!anon){lock();throw new Error('Session expired. Log in again.')}
- if(!j.ok)throw new Error(j.error||'Request failed');return j}
-
+ if(j.status===401&&!anon){lock();throw new Error('Session expired. Log in again.')}if(!j.ok)throw new Error(j.error||'Request failed');return j}
 function lock(){tk=null;sessionStorage.removeItem('jt');stopAudio();$('app').style.display='none';$('login').style.display='flex';set('','LOCKED')}
-function stopAudio(){tok++;if(audio){audio.pause();audio=null}if(url){URL.revokeObjectURL(url);url=null}$('stop').disabled=true}
-
-async function speak(text,quiet){
- stopAudio();const my=tok;set('thinking','GENERATING VOICE');
- try{
-  const j=await api('tts',{text});if(my!==tok)return;
-  url=URL.createObjectURL(new Blob([Uint8Array.from(atob(j.audio),c=>c.charCodeAt(0))],{type:'audio/mpeg'}));
-  if(my!==tok){stopAudio();return}
+function stopAudio(){tok++;fb=false;if('speechSynthesis' in window)speechSynthesis.cancel();if(audio){audio.pause();audio=null}if(url){URL.revokeObjectURL(url);url=null}$('stop').disabled=true}
+async function speak(text,quiet){stopAudio();const my=tok;if(!USE_FISH){say(text,my);return}set('thinking','GENERATING VOICE');
+ try{const j=await api('tts',{text});if(my!==tok)return;url=URL.createObjectURL(new Blob([Uint8Array.from(atob(j.audio),c=>c.charCodeAt(0))],{type:'audio/mpeg'}));if(my!==tok){stopAudio();return}
   audio=new Audio(url);
-  actx=actx||new AudioContext();await actx.resume();
-  const src=actx.createMediaElementSource(audio);an=actx.createAnalyser();an.fftSize=128;data=new Uint8Array(an.frequencyBinCount);
-  src.connect(an);an.connect(actx.destination);
-  audio.onended=()=>{stopAudio();an=null;set('','READY')};
-  $('stop').disabled=false;set('speaking','SPEAKING');await audio.play();
- }catch(e){if(my===tok){stopAudio();an=null;if(!quiet)add('Voice unavailable: '+e.message,'e');set('','READY')}}}
-
-$('f').onsubmit=async e=>{
- e.preventDefault();const m=t.value.trim();if(!m||busy)return;
- busy=true;$('send').disabled=true;stopAudio();add(m,'u');set('thinking','PROCESSING');
+  actx=actx||new AudioContext();await actx.resume();const src=actx.createMediaElementSource(audio);an=actx.createAnalyser();an.fftSize=128;data=new Uint8Array(an.frequencyBinCount);src.connect(an);an.connect(actx.destination);
+  audio.onended=()=>{stopAudio();an=null;set('','READY')};$('stop').disabled=false;set('speaking','SPEAKING');await audio.play()}
+ catch(e){if(my===tok){an=null;if(audio){audio.pause();audio=null}if(url){URL.revokeObjectURL(url);url=null}
+  if(!quiet&&!noted){noted=true;add('Fish Audio unavailable ('+e.message+'). Using this device\'s voice instead.','e')}
+  say(text,my)}}}
+function say(text,my){
+ if(!('speechSynthesis' in window)){set('','READY');return}
+ const u=new SpeechSynthesisUtterance(text);u.rate=1;u.pitch=.9;
+ const v=speechSynthesis.getVoices().find(v=>/^en/i.test(v.lang)&&/male|david|daniel|alex|uk english/i.test(v.name));if(v)u.voice=v;
+ u.onboundary=()=>{pulse=1};
+ const done=()=>{if(my===tok){fb=false;$('stop').disabled=true;set('','READY')}};
+ u.onend=done;u.onerror=done;
+ fb=true;$('stop').disabled=false;set('speaking','SPEAKING');speechSynthesis.speak(u)}
+$('f').onsubmit=async e=>{e.preventDefault();const m=t.value.trim();if(!m||busy)return;busy=true;$('send').disabled=true;stopAudio();add(m,'u');set('thinking','PROCESSING');
  try{const j=await api('chat',{message:m,conversationId:cid});t.value='';add(j.reply,'a');set('','READY');if($('auto').checked)speak(j.reply)}
- catch(x){add(x.message,'e');set('error','CONNECTION ERROR')}
- finally{busy=false;$('send').disabled=false}};
-
+ catch(x){add(x.message,'e');set('error','CONNECTION ERROR')}finally{busy=false;$('send').disabled=false}};
 t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('f').requestSubmit()}};
 $('stop').onclick=()=>{stopAudio();an=null;set('','READY')};
 $('out').onclick=lock;
 $('clr').onclick=async()=>{if(!confirm('Clear this conversation?'))return;stopAudio();try{await api('clear',{conversationId:cid})}catch{}cid=crypto.randomUUID();log.innerHTML=''};
-
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-$('mic').onclick=()=>{
- if(!SR){add('Speech recognition is not supported in this browser.','e');return}
- if(rec){rec.stop();return}
- stopAudio();rec=new SR();rec.lang=navigator.language;
- rec.onstart=()=>set('listening','LISTENING');
+$('mic').onclick=()=>{if(!SR){add('Speech recognition is not supported in this browser.','e');return}
+ if(rec){rec.stop();return}stopAudio();rec=new SR();rec.lang=navigator.language;rec.onstart=()=>set('listening','LISTENING');
  rec.onresult=e=>{t.value=e.results[0][0].transcript;t.focus()};
  rec.onerror=e=>add(e.error==='not-allowed'?'Microphone permission denied.':'Mic error: '+e.error,'e');
- rec.onend=()=>{rec=null;set('','READY')};
- rec.start()};
-
-function enter(name,speakIt){
- $('login').style.display='none';$('app').style.display='flex';set('','READY');
- const w=`Welcome, ${name}. What are we doing today?`;
- if(!log.children.length)add(w,'a');
- if(speakIt)speak(w,true)}
-
-$('lf').onsubmit=async e=>{
- e.preventDefault();$('lerr').textContent='';$('lb').disabled=true;
+ rec.onend=()=>{rec=null;set('','READY')};rec.start()};
+function enter(name,speakIt){$('login').style.display='none';$('app').style.display='flex';set('','READY');
+ const w=`Welcome, ${name}. What are we doing today?`;if(!log.children.length)add(w,'a');if(speakIt)speak(w,true)}
+$('lf').onsubmit=async e=>{e.preventDefault();$('lerr').textContent='';$('lb').disabled=true;
  try{const j=await api('login',{key:$('key').value},true);tk=j.token;sessionStorage.setItem('jt',tk);sessionStorage.setItem('jn',j.name);$('key').value='';enter(j.name,true)}
- catch(x){$('lerr').textContent=x.message}
- finally{$('lb').disabled=false}};
-
+ catch(x){$('lerr').textContent=x.message}finally{$('lb').disabled=false}};
 if(tk)enter(sessionStorage.getItem('jn')||'Iron Man',false);
-</script>
-</body>
-  </html>
+</script></body></html>
